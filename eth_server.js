@@ -135,6 +135,65 @@ dispatcher.onGet("/send_first_message", function(req, res) {
     
 });    
 
+dispatcher.onGet("/send_message", function(req, res) {
+	
+	if (req.params.addr == '') {
+		res.writeHead(200, {'Content-Type': 'text/plain'});
+    	res.end('wrong sender address');
+	}
+	
+	if (req.params.recipient == '') {
+		res.writeHead(200, {'Content-Type': 'text/plain'});
+    	res.end('no recepient address');
+	}
+	
+	if (req.params.message == '') {
+		res.writeHead(200, {'Content-Type': 'text/plain'});
+    	res.end('no message');
+	}
+	
+	var addr= req.params.addr.toString();
+	console.log(addr);
+	var recipient= req.params.recipient.toString();
+	console.log(recipient);
+	var message= req.params.message.toString();
+	console.log(message);
+	
+	var headers = {
+    	'User-Agent':       'Super Agent/0.0.1',
+    	'Content-Type':     'application/json-rpc',
+    	'Accept':'application/json-rpc'
+	}
+	var options = {
+  		url: 'http://localhost:9095',
+  		method: 'POST',
+  		headers: headers,
+  		json: true,
+  		body: {"method": "personal_unlockAccount", "params": [addr,''], "id":recipient}
+	}
+	
+	request(options, function (error, body) {
+			
+		
+    		if (!error && res.statusCode == 200) {
+    			console.log("body: " + JSON.stringify(body.body));
+    			var result= body.body.result.toString();  
+        			res.writeHead(200, {"Content-Type": "text/plain"});
+        			res.write(result);
+        			// send message
+        			messenger.send_message.sendTransaction(recipient,message,{from: addr});
+        			console.log(messenger.get_counter(addr).toString());
+    		} else	{
+    			console.log("error");
+      			res.writeHead(response.statusCode, {"Content-Type": "text/plain"});
+      			res.write(response.statusCode.toString() + " " + error);
+    		}
+    		res.end();
+	})
+    
+});    
+
+
 dispatcher.onGet("/get_inbox", function(req, res) {
 	
 	if (req.params.addr == '') {
