@@ -1,4 +1,4 @@
 # messenger
 block chain messaging
 
-![alt tag](https://github.com/friedhelmensch/messenger/blob/master/Ethereum.png)
+![alt tag](http://x.rang.de/wp-content/uploads/2016/12/Ethereum.png)
