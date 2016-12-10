@@ -14,7 +14,7 @@ var web3_map = new Web3();
 
 
 web3_mes.setProvider(new web3_mes.providers.HttpProvider("http://localhost:9095"));
-web3_map.setProvider(new web3_mes.providers.HttpProvider("http://localhost:8545"));
+web3_map.setProvider(new web3_map.providers.HttpProvider("http://localhost:8545"));
 
 
 var mapperContract = web3_map.eth.contract([{"constant":false,"inputs":[],"name":"kill","outputs":[],"type":"function"},{"constant":true,"inputs":[],"name":"get_Counter","outputs":[{"name":"","type":"uint32"}],"type":"function"},{"constant":true,"inputs":[],"name":"get_Value","outputs":[{"name":"","type":"uint256"}],"type":"function"},{"constant":true,"inputs":[{"name":"a","type":"address"}],"name":"check_Address","outputs":[{"name":"","type":"bool"}],"type":"function"},{"constant":false,"inputs":[],"name":"send_Ether_To_Owner","outputs":[{"name":"","type":"bool"}],"type":"function"},{"constant":false,"inputs":[{"name":"new_address","type":"address"}],"name":"create_Member","outputs":[{"name":"","type":"bool"}],"type":"function"},{"inputs":[],"type":"constructor"},{"anonymous":false,"inputs":[{"indexed":false,"name":"new_address","type":"address"}],"name":"CreateMember","type":"event"}]);
@@ -41,6 +41,32 @@ function handleRequest(request, response){
     }
 }
 
+function fill_account(web3_mes, address_new_member, amount) {
+
+	var id= "fill for: "+address_new_member;
+	var headers = {
+    	'User-Agent':       'Super Agent/0.0.1',
+    	'Content-Type':     'application/json-rpc',
+    	'Accept':'application/json-rpc'
+	}
+	var options = {
+  		url: 'http://localhost:9095',
+  		method: 'POST',
+  		headers: headers,
+  		json: true,
+  		body: {"method": "personal_unlockAccount", "params": [web3_mes.eth.accounts[0],'jackpot3'], "id": id}
+	}
+	
+	request(options, function (error, body) {
+		if (!error) {
+    			console.log("body: " + JSON.stringify(body.body));
+    			web3_mes.eth.sendTransaction({from: web3_mes.eth.accounts[0],to:address_new_member,value: web3_mes.toWei(amount, "ether")});
+    	} else	{
+    			console.log("error");
+    	}
+    })
+}
+    
 dispatcher.setStatic('resources');
 
 dispatcher.onGet("/register", function(req, res) {
@@ -55,6 +81,7 @@ dispatcher.onGet("/register", function(req, res) {
 	if (is_member) {
 	    console.log("is member. creating account");
 	    		
+		var id="member count: "+mapper.get_Counter();
 		var headers = {
     		'User-Agent':       'Super Agent/0.0.1',
     		'Content-Type':     'application/json-rpc',
@@ -65,7 +92,7 @@ dispatcher.onGet("/register", function(req, res) {
   			method: 'POST',
   			headers: headers,
   			json: true,
-  			body: {"method": "personal_newAccount", "params": [''], "id":mapper.get_Counter()}
+  			body: {"method": "personal_newAccount", "params": [''], "id":id}
 		}
 		
 		request(options, function (error, body) {
@@ -76,12 +103,17 @@ dispatcher.onGet("/register", function(req, res) {
     			var new_account= body.body.result.toString();  
         			res.writeHead(200, {"Content-Type": "text/plain"});
         			res.write(new_account);
+        			res.end();
+        			
+        			fill_account(web3_mes,new_account,50);
+        			
     		} else	{
     			console.log("error");
       			res.writeHead(response.statusCode, {"Content-Type": "text/plain"});
       			res.write(response.statusCode.toString() + " " + error);
+      			res.end();
     		}
-    		res.end();
+    		
 		})
 	
     } else {    	
@@ -101,6 +133,7 @@ dispatcher.onGet("/send_first_message", function(req, res) {
 	var addr= req.params.addr.toString();
 	console.log(addr);
 	
+	var id="first message to "+addr;
 	var headers = {
     	'User-Agent':       'Super Agent/0.0.1',
     	'Content-Type':     'application/json-rpc',
@@ -111,7 +144,7 @@ dispatcher.onGet("/send_first_message", function(req, res) {
   		method: 'POST',
   		headers: headers,
   		json: true,
-  		body: {"method": "personal_unlockAccount", "params": [web3_mes.eth.accounts[2],''], "id":addr}
+  		body: {"method": "personal_unlockAccount", "params": [web3_mes.eth.accounts[0],'jackpot3'], "id":id}
 	}
 	
 	request(options, function (error, body) {
@@ -123,7 +156,7 @@ dispatcher.onGet("/send_first_message", function(req, res) {
         			res.writeHead(200, {"Content-Type": "text/plain"});
         			res.write(result);
         			// Send first message
-        			messenger.send_message.sendTransaction(addr,'Hello new member: ',{from: web3_mes.eth.accounts[2]});
+        			messenger.send_message.sendTransaction(addr,'Hello new member: ',{from: web3_mes.eth.accounts[0]});
         			console.log(messenger.get_counter(addr).toString());
     		} else	{
     			console.log("error");
@@ -159,6 +192,7 @@ dispatcher.onGet("/send_message", function(req, res) {
 	var message= req.params.message.toString();
 	console.log(message);
 	
+	var id= "message to: "+recipient;
 	var headers = {
     	'User-Agent':       'Super Agent/0.0.1',
     	'Content-Type':     'application/json-rpc',
@@ -169,7 +203,7 @@ dispatcher.onGet("/send_message", function(req, res) {
   		method: 'POST',
   		headers: headers,
   		json: true,
-  		body: {"method": "personal_unlockAccount", "params": [addr,''], "id":recipient}
+  		body: {"method": "personal_unlockAccount", "params": [addr,''], "id":id}
 	}
 	
 	request(options, function (error, body) {
@@ -182,7 +216,7 @@ dispatcher.onGet("/send_message", function(req, res) {
         			res.write(result);
         			// send message
         			messenger.send_message.sendTransaction(recipient,message,{from: addr});
-        			console.log(messenger.get_counter(addr).toString());
+        			console.log(messenger.get_counter(recipient).toString());
     		} else	{
     			console.log("error");
       			res.writeHead(response.statusCode, {"Content-Type": "text/plain"});
