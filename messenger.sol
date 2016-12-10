@@ -25,6 +25,10 @@ contract messenger {
         return All_Messages[_receiver].My_Messages[index].text;
     }
     
+    function get_sender(address _receiver, uint32 index) constant returns (address) {
+        return All_Messages[_receiver].My_Messages[index].sender;
+    }
+    
     function get_counter(address _receiver) constant returns (uint32) {
         return All_Messages[_receiver].counter;
     }
