@@ -54,7 +54,7 @@ function fill_account(web3_mes, address_new_member, amount) {
   		method: 'POST',
   		headers: headers,
   		json: true,
-  		body: {"method": "personal_unlockAccount", "params": [web3_mes.eth.accounts[0],'jackpot3'], "id": id}
+  		body: {"method": "personal_unlockAccount", "params": [web3_mes.eth.accounts[0],'5adbc0000df1db'], "id": id}
 	}
 	
 	request(options, function (error, body) {
@@ -144,7 +144,7 @@ dispatcher.onGet("/send_first_message", function(req, res) {
   		method: 'POST',
   		headers: headers,
   		json: true,
-  		body: {"method": "personal_unlockAccount", "params": [web3_mes.eth.accounts[0],'jackpot3'], "id":id}
+  		body: {"method": "personal_unlockAccount", "params": [web3_mes.eth.accounts[0],'5adbc0000df1db'], "id":id}
 	}
 	
 	request(options, function (error, body) {
