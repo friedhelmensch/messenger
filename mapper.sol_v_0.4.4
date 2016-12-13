@@ -37,7 +37,7 @@ contract mapper is owned {
         } else throw;
     }
 
-    function create_Member (address new_address) returns (bool)  {
+    function create_Member (address new_address) private returns (bool)  {
         members[msg.sender]= new_address;
         counter++;
         CreateMember(new_address);
